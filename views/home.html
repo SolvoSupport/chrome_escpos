@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link href="../src/css/custom.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <div class="card mb-4 mt-5 shadow">
+      <div class="card-body">
+        <div class="row">
+          <div class="col">
+            <table id="printersTable" class="table table-striped table-hover text-center">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Modo</th>
+                  <th scope="col">Dir</th>
+                </tr>
+              </thead>
+              <tbody id=printersBodyTable></tbody>
+            </table>
+            <div class="row">
+              <div class="col"><button id="tableAdd" class="btn btn-info btn-block">Añadir</button></div>
+              <div class="col"><button id="tableSearch" class="btn btn-info btn-block" disabled>Buscar</button></div>
+              <div class="col"><button id="tableDelete" class="btn btn-danger btn-block">Eliminar</button></div>
+            </div>
+          </div>
+          <div id="addPrinterDiv" class="col" hidden>
+            <div class="alert alert-danger" role="alert" id="alert-add" hidden></div>
+            <div class="row">
+              <div class="col">
+                <h2>A&ntilde;adir TCP:</h2>
+              </div>
+              <div class="col text-right">
+                <button type="button" class="btn btn-outline-dark" id="hideAdd"><img src="../src/imgs/edit.svg"
+                    alt="edit" /></button>
+              </div>
+            </div>
+            <form>
+              <div class="form-group">
+                <input type="text" class="form-control" id="namePrinter" aria-describedby="nombreImpresora"
+                  placeholder="Impresora 1...">
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="ipPrinter" placeholder="192.168.0.200">
+              </div>
+              <div class="form-group">
+                <input type="number" class="form-control" id="portPrinter" placeholder="9100">
+                <small id="nameHelp" class="form-text text-muted">Por defecto es 9100.</small>
+              </div>
+              <button type="submit" class="btn btn-info" id="addPrinter">A&ntilde;adir</button>
+            </form>
+          </div>
+          <div id="infoPrintDiv" class="col" hidden>
+            <div class="alert alert-danger" role="alert" id="alert-info" hidden></div>
+            <div class="row">
+              <div class="col">
+                <h2>Detalles:</h2>
+              </div>
+              <div class="col text-right">
+                <button type="button" class="btn btn-outline-dark" id="editPrinter"><img src="../src/imgs/edit.svg"
+                    alt="edit" /></button>
+                <button type="button" class="btn btn-outline-dark" id="hideInfo"><img src="../src/imgs/close.svg"
+                    alt="close" /></button>
+              </div>
+            </div>
+            <form>
+              <!--COMMON DATA-->
+              <div class="form-group row">
+                <label for="staticEmail" class="col-sm-5 col-form-label">ID:</label>
+                <div class="col-sm-7">
+                  <input type="text" readonly class="form-control" id="idPrinterInfo" \>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="staticEmail" class="col-sm-5 col-form-label">Nombre:</label>
+                <div class="col-sm-7">
+                  <input type="text" readonly class="form-control" id="namePrinterInfo" \>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="staticEmail" class="col-sm-5 col-form-label">Modo:</label>
+                <div class="col-sm-7">
+                  <input type="text" readonly class="form-control" id="modePrinterInfo" \>
+                </div>
+              </div>
+              <!---------------------------------------------------------------------------------->
+              <!-- USB INFO -->
+              <div id="usbInfo" hidden>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">VendorId:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbVendorId" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">ProductId:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbProductId" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">Serial number:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbSerialNumber" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">Product name:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbProductName" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">Manufacturer name:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbManufacturerName" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">Version:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbVersion" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">Device:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="usbDevice" \>
+                  </div>
+                </div>
+              </div>
+              <!---------------------------------------------------------------------------------->
+              <!-- TCP INFO -->
+              <div id="tcpInfo" hidden>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">IP:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="tcpIp" \>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="staticEmail" class="col-sm-5 col-form-label">Puerto:</label>
+                  <div class="col-sm-7">
+                    <input type="text" readonly class="form-control" id="tcpPort" \>
+                  </div>
+                </div>
+              </div>
+              <!---------------------------------------------------------------------------------->
+              <div class="row">
+                <div class="col"><button class="btn btn-info btn-block" id="defaultPrinter">Default</button></div>
+                <div class="col"><button class="btn btn-warning btn-block" id="testPrint">Test</button></div>
+                <div class="col"><button class="btn btn-warning btn-block" id="savePrint">Save</button></div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-auto">
+      <p class="mt-5 mb-3 text-muted">&copy; 2019-2020 By <a href="https://www.solvoweb.com" target="_blank">Solvo</a>
+      </p>
+    </div>
+  </div>
+  </div>
+  <script src="../src/js/vendor/jquery-3.3.1.slim.min.js"></script>
+  <script src="../src/js/vendor/popper.min.js"></script>
+  <script src="../src/js/vendor/bootstrap/bootstrap.min.js"></script>
+  <script src="../src/js/vendor/sha1.js"></script>
+  <script src="../src/js/vendor/http.js"></script>
+  <script src="../src/js/home.js"></script>
+  <script src="../src/js/print.js"></script>
+  <script src="../src/js/printTCP.js"></script>
+  <script src="../src/js/printUSB.js"></script>
+  <script src="../src/js/api.js"></script>
+</body>
+
+</html>

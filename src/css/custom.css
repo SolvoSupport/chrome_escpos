@@ -1,0 +1,23 @@
+@import 'bootstrap.min.css?2000';
+
+@font-face
+{
+	font-family: 'Roboto';
+	src: url(../fonts/Roboto-Regular.ttf);
+}
+
+* {
+	margin: 0px;
+	padding: 0px;
+	font-family: 'Roboto', sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+.selected{
+	border:2pt solid rgb(122, 160, 222);
+}
+

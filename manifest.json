@@ -1,0 +1,40 @@
+{
+  "app": {
+    "background": {
+      "scripts": [
+        "src/js/main.js"
+      ]
+    }
+  },
+  "manifest_version": 2,
+  "name": "Chrome ESC/POS",
+  "version": "0.1",
+  "description": "ESC-POS printer API",
+  "icons": {
+    "128": "src/imgs/icon_128.png"
+  },
+  "minimum_chrome_version": "25",
+  "permissions": [
+    "usb",
+    "storage",
+    {
+      "usbDevices": [
+        {
+          "vendorId": 1046,
+          "productId": 20497
+        }
+      ]
+    }
+  ],
+  "sockets": {
+    "udp": {
+      "send": "*"
+    },
+    "tcp": {
+      "connect": "*"
+    },
+    "tcpServer": {
+      "listen": "*"
+    }
+  }
+}
