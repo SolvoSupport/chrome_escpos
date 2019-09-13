@@ -16,7 +16,6 @@ function encodeUSBText(s, callback){
 
 function encodeQr(data, callback) {
     var qrdata = data || "Undefined QR";
-    qrdata = "qol";
     var len = qrdata.length + 3;
     var size = 6; // De 1 a 8
     size = ((size % 8) + 8) % 8;
@@ -32,9 +31,7 @@ function encodeQr(data, callback) {
     qrBegin.forEach(element => {
         s += String.fromCharCode(element);
     });
-    s += String.fromCharCode(0x46);
-    s += String.fromCharCode(0x46);
-    s += String.fromCharCode(0x46);
+    s += qrdata;
     qrEnd.forEach(element => {
         s += String.fromCharCode(element);
     });
@@ -43,7 +40,7 @@ function encodeQr(data, callback) {
 
 function printTicketUsb(data, callback){
     encodeQr(data.qr, function (qr) {
-        var ticket = qr + String.fromCharCode(0x0a) + String.fromCharCode(0x1d) + String.fromCharCode(0x56) + String.fromCharCode(0x41) + String.fromCharCode(0x03);
+        var ticket = data.text + qr + String.fromCharCode(0x0a) + String.fromCharCode(0x1d) + String.fromCharCode(0x56) + String.fromCharCode(0x41) + String.fromCharCode(0x03);
         encodeUSBText(ticket, function (output) {
             callback(output);
         });
@@ -78,9 +75,17 @@ function print(message, messageType, printer, callback) {
         if (mode === "tcp")
             encodeText(message, sendToPrint);
     } else if (messageType === "qr") {
-        encodeQr(message, function (s) {
-            encodeText(s, sendToPrint);
-        });
+        if(mode === "usb"){
+            encodeQr(message, function(s){
+                encodeUSBText(s, sendToPrint);
+            });
+        }
+        if(mode === "tcp"){
+            encodeQr(message, function (s) {
+                encodeText(s, sendToPrint);
+            });
+        }
+        
     } else if (messageType === "ticket") {
         if (mode === "usb")
             printTicketUsb(message, sendToPrint);
