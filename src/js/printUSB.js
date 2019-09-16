@@ -88,4 +88,3 @@ function printUSB(dataArray, printer, response) {
     printDataToDevice(data, printer.device, response);
     //test_print(data);
 }
-

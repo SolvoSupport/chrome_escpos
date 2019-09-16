@@ -7,7 +7,7 @@
     }
   },
   "manifest_version": 2,
-  "name": "Chrome ESC/POS",
+  "name": "Solvo Chrome ESC/POS",
   "version": "0.1",
   "description": "ESC-POS printer API",
   "icons": {

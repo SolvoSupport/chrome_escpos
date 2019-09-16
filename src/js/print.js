@@ -38,7 +38,7 @@ function encodeQr(data, callback) {
     callback(s);
 }
 
-function printTicketUsb(data, callback){
+function printTicketUsb(data, callback) {
     encodeQr(data.qr, function (qr) {
         var ticket = data.text + qr + String.fromCharCode(0x0a) + String.fromCharCode(0x1d) + String.fromCharCode(0x56) + String.fromCharCode(0x41) + String.fromCharCode(0x03);
         encodeUSBText(ticket, function (output) {

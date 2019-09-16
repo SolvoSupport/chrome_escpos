@@ -139,6 +139,7 @@ function enableParam(enable, type) {
     $('#usbDevice').attr('readonly', enable);
   }
 }
+
 function editPrinter() {
   function callback(data) {
     var attr = $('#namePrinterInfo').attr('readonly');

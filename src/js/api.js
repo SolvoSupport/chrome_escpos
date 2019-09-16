@@ -7,6 +7,8 @@ var port = 9999;
 var server = new http.Server();
 var wsServer = new http.WebSocketServer(server);
 var isServer = true;
+const PRIVATE_TOKEN = "npfdFMGpysvG7SNEGy60hTAoS0/EhHsIdvc94CQgUnU";
+
 server.listen(port);
 /////////////////////////////////////////////////////////////////
 
@@ -28,19 +30,23 @@ wsServer.addEventListener('request', function (req) {
       socket.send(JSON.stringify(data));
     }
     var msj = JSON.parse(e.data);
-    var func = msj.func;
-    var data = msj.data;
     var token = msj.token;
-    var funcs = {
-      print: handlePrint,
-      add: addPrinter,
-      remove: removePrinter,
-      getDefaultPrinter: getDefaultPrinter,
-      setDefaultPrinter: setDefaultPrinter,
-      getPrinters: getPrinters,
-      scanUSBPrinters: scanUSBPrinters
-    };
-    funcs[func](data, response);
+    if(token === PRIVATE_TOKEN){
+      var func = msj.func;
+      var data = msj.data;
+      var funcs = {
+        print: handlePrint,
+        add: addPrinter,
+        remove: removePrinter,
+        getDefaultPrinter: getDefaultPrinter,
+        setDefaultPrinter: setDefaultPrinter,
+        getPrinters: getPrinters,
+        scanUSBPrinters: scanUSBPrinters
+      };
+      funcs[func](data, response);
+    }else{
+      response({status: false, error:"Invalid token. Access is not granted."});
+    }
   });
   socket.addEventListener('close', function () {
     for (var i = 0; i < connectedSockets.length; i++) {
@@ -52,9 +58,13 @@ wsServer.addEventListener('request', function (req) {
   });
   return true;
 });
+
+chrome.usb.onDeviceAdded.addListener((device) => {
+  addPrinterUSB(device, loadPrinters);
+});
 /////////////////////////////////////////////////////////////////
 
-//Storage
+//Storage 
 function addPrinter(data, response) {
   try {
     chrome.storage.local.get(['printers'], function (result) {
@@ -71,7 +81,7 @@ function addPrinter(data, response) {
         result.push(obj);
         chrome.storage.local.set({ printers: result }, function () {
           printers = result;
-          return response ? response({ status: true, printers: printers }) : { status: true, printers: printers };
+          return response ? response({ status: true, printers: printers }) : { status: true, printers: printers, id: id };
         });
       } else {
         return response ? response({ status: false, printers: printers }) : { status: false, printers: printers };
@@ -80,7 +90,6 @@ function addPrinter(data, response) {
   } catch{
     return response ? response({ status: false }) : { status: false };
   }
-
 }
 
 function updatePrinter(data, response) {
@@ -129,9 +138,23 @@ function removePrinter(id, response) {
         return response ? response({ status: true, printers: printers }) : { status: true, printers: printers };
       });
     });
-  } catch{
+  } catch {
     return response ? response({ status: false }) : { status: false };
   }
+}
+
+function removeListPrinter(list, response) {
+  var i = 0;
+  list = list || [];
+  if(list.length === 0)
+    return response();
+  function f(){
+    i += 1;
+    if(i >= list.length)
+      return response();
+    removePrinter(list[i], f);
+  }
+  removePrinter(list[i], f);
 }
 
 function getDefaultPrinter(data, response) {
@@ -179,7 +202,7 @@ function checkParam(data, keyName, acceptedValues) {
     }
   } else {
     if (data[keyName] === undefined || !(data[keyName] in acceptedValues)) {
-      error = "Key undefined or invalid: '" + keyName + "'. Get: '" + data[keyName] + "'.Check documentation.";
+      error = "Key undefined or invalid: '" + keyName + "'. Get: '" + data[keyName] + "'. Check documentation.";
       return { status: false, error: error };
     }
   }
@@ -213,10 +236,53 @@ function isIn(obj, list) {
   return false;
 }
 
+function cleanUSBDuplicates(device, response){
+  var def;
+  function f(data){
+    var isDef = false;
+    var deleteList = [];
+    var list = data.printers;
+    if (!list || !device)
+      return response(false);
+    for (let i = 0; i < list.length; i++) {
+      const element = list[i];
+      var o = device;
+      var e = element.device;
+      var v = o.vendorId === e.vendorId;
+      v = v && o.productId === e.productId;
+      v = v && o.version === e.version;
+      v = v && o.productName === e.productName;
+      v = v && o.manufacturerName === e.manufacturerName;
+      v = v && o.serialNumber === e.serialNumber;
+      if(v){
+        deleteList.push(element.id);
+        isDef = def === element.id;
+      }
+        
+    }
+    removeListPrinter(deleteList, () => {
+      response(isDef);
+    });
+  }
+  getDefaultPrinter(null, (data) => {
+    def = data.id;
+    getPrinters(null, f);
+  })
+}
+
 function addPrinterUSB(device, response) {
-  var nm = "usb" + device.device;
-  var obj = { name: nm, mode: "usb", device: device };
-  addPrinter(obj, response);
+  function f(isDef){
+    var nm = "usb" + device.device;
+    var obj = { name: nm, mode: "usb", device: device };
+    addPrinter(obj, (data) => {
+      if(isDef){
+        if(data.status)
+          return setDefaultPrinter(data.id, response);
+      }
+      response();
+    });
+  }
+  cleanUSBDuplicates(device, f);
 }
 
 function searchById(id, response) {
@@ -232,7 +298,6 @@ function searchById(id, response) {
   });
 }
 /////////////////////////////////////////////////////////////////
-
 function selectPrinter(response) {
   filters = chrome.runtime.getManifest().permissions[2].usbDevices;
   chrome.usb.getUserSelectedDevices({ 'multiple': true, 'filters': filters }, function (devices) {
@@ -243,12 +308,20 @@ function selectPrinter(response) {
     devices.forEach(element => {
       addPrinterUSB(element, response);
     });
-  });;
+  });
 }
 
 function scanUSBPrinters(data, response) {
   function getDeviceList(devices) {
-    return response ? response(devices) : devices;
+    var i = 0;
+    devices.forEach((e)=>{
+      addPrinterUSB(e, () => {
+        i++;
+        if(devices.length === i){
+          return response ? response(devices) : devices;
+        }
+      });
+    });
   }
   filters = chrome.runtime.getManifest().permissions[2].usbDevices;
   chrome.usb.getDevices({ filters: filters }, getDeviceList);
@@ -281,3 +354,8 @@ function handlePrint(data, response) {
   });
 }
 /////////////////////////////////////////////////////////////////
+
+
+scanUSBPrinters(null, (element) => {
+  loadPrinters();
+});
