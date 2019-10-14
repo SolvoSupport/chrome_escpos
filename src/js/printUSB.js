@@ -1,7 +1,7 @@
 function printDataToDevice(data, device, response) {
     // Open a device and print the data to the resulting handle
     if (!device) {
-        response({ status: false, error: "No se ha seleccionado ninguna impresora usb." });
+        response({ status: false, error: "Err: 000. No se ha seleccionado ninguna impresora usb." });
         return;
     }
     chrome.usb.openDevice(device, function (handle) {
@@ -9,22 +9,43 @@ function printDataToDevice(data, device, response) {
     });
 }
 
-function printDataToHandle(data, device, handle, response) {
-    // Claim interface and print data to it
-    if (!handle) {
-        response({ status: false, error: "Fallo al reclamar la interfaz del dispositivo." });
-        return;
-    }
-    chrome.usb.claimInterface(handle, 0, function () {
-        if (chrome.runtime.lastError) {
-            response({ status: false, error: "Fallo al reclamar la interfaz del dispositivo." });
+function tryResetDevices(handle, response, next) {
+    chrome.usb.resetDevice(handle, function (success) {
+        if (!success) {
+            response({ status: false, error: "Err: 001. Fallo al reclamar la interfaz del dispositivo. " + chrome.runtime.lastError });
             return;
+        } else {
+            scanUSBPrinters(null, (element) => {
+                loadPrinters();
+                next();
+            });
         }
-        printDataToInterface(data, device, handle, response);
     });
 }
 
-function printDataToInterface(data, device, handle) {
+function middlePrint(data, device, handle, response) {
+    chrome.usb.claimInterface(handle, 0, function () {
+        if (chrome.runtime.lastError) {
+            tryResetDevices(handle, response, function () {
+                printDataToInterface(data, device, handle, response);
+            });
+        } else {
+            printDataToInterface(data, device, handle, response);
+        }
+    });
+}
+function printDataToHandle(data, device, handle, response) {
+    // Claim interface and print data to it
+    if (!handle) {
+        tryResetDevices(handle, response, function () {
+            middlePrint(data, device, handle, response);
+        });
+    } else {
+        middlePrint(data, device, handle, response);
+    }
+}
+
+function printDataToInterface(data, device, handle, response) {
     if (!handle)
         return;
     // Transfer data to a claimed interface on an open device
@@ -34,16 +55,21 @@ function printDataToInterface(data, device, handle) {
         "data": data
     };
     chrome.usb.bulkTransfer(handle, info, function (transferResult) {
-        if (transferResult.resultCode) {
-            response({ status: false, error: "Error en la transferencia" });
-            return;
-        }
         chrome.usb.releaseInterface(handle, 0, function () {
-            if (chrome.runtime.lastError)
-                return;
+            if (chrome.runtime.lastError) {
+                tryResetDevices(handle, response, function () {
+                    chrome.usb.closeDevice(handle);
+                });
+                //return response({ status: false, error: "Err: 003. Error al cerrar el dispositivo. " + chrome.runtime.lastError });
+            }
+            chrome.usb.closeDevice(handle);
         });
+        if (transferResult.resultCode) {
+            response({ status: false, error: "Err: 004. Error en la transferencia. " + chrome.runtime.lastError });
+        }
     });
 }
+
 
 //Another way to print
 function test_print(data) {
