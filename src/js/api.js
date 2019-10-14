@@ -31,7 +31,7 @@ wsServer.addEventListener('request', function (req) {
     }
     var msj = JSON.parse(e.data);
     var token = msj.token;
-    if(token === PRIVATE_TOKEN){
+    if (token === PRIVATE_TOKEN) {
       var func = msj.func;
       var data = msj.data;
       var funcs = {
@@ -44,8 +44,8 @@ wsServer.addEventListener('request', function (req) {
         scanUSBPrinters: scanUSBPrinters
       };
       funcs[func](data, response);
-    }else{
-      response({status: false, error:"Invalid token. Access is not granted."});
+    } else {
+      response({ status: false, error: "Invalid token. Access is not granted." });
     }
   });
   socket.addEventListener('close', function () {
@@ -146,11 +146,11 @@ function removePrinter(id, response) {
 function removeListPrinter(list, response) {
   var i = 0;
   list = list || [];
-  if(list.length === 0)
+  if (list.length === 0)
     return response();
-  function f(){
+  function f() {
     i += 1;
-    if(i >= list.length)
+    if (i >= list.length)
       return response();
     removePrinter(list[i], f);
   }
@@ -236,9 +236,9 @@ function isIn(obj, list) {
   return false;
 }
 
-function cleanUSBDuplicates(device, response){
+function cleanUSBDuplicates(device, response) {
   var def;
-  function f(data){
+  function f(data) {
     var isDef = false;
     var deleteList = [];
     var list = data.printers;
@@ -254,11 +254,11 @@ function cleanUSBDuplicates(device, response){
       v = v && o.productName === e.productName;
       v = v && o.manufacturerName === e.manufacturerName;
       v = v && o.serialNumber === e.serialNumber;
-      if(v){
+      if (v) {
         deleteList.push(element.id);
         isDef = def === element.id;
       }
-        
+
     }
     removeListPrinter(deleteList, () => {
       response(isDef);
@@ -271,12 +271,12 @@ function cleanUSBDuplicates(device, response){
 }
 
 function addPrinterUSB(device, response) {
-  function f(isDef){
+  function f(isDef) {
     var nm = "usb" + device.device;
     var obj = { name: nm, mode: "usb", device: device };
     addPrinter(obj, (data) => {
-      if(isDef){
-        if(data.status)
+      if (isDef) {
+        if (data.status)
           return setDefaultPrinter(data.id, response);
       }
       response();
@@ -314,10 +314,10 @@ function selectPrinter(response) {
 function scanUSBPrinters(data, response) {
   function getDeviceList(devices) {
     var i = 0;
-    devices.forEach((e)=>{
+    devices.forEach((e) => {
       addPrinterUSB(e, () => {
         i++;
-        if(devices.length === i){
+        if (devices.length === i) {
           return response ? response(devices) : devices;
         }
       });

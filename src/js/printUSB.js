@@ -4,9 +4,13 @@ function printDataToDevice(data, device, response) {
         response({ status: false, error: "Err: 000. No se ha seleccionado ninguna impresora usb." });
         return;
     }
-    chrome.usb.openDevice(device, function (handle) {
-        printDataToHandle(data, device, handle, response)
-    });
+    try {
+        chrome.usb.openDevice(device, function (handle) {
+            printDataToHandle(data, device, handle, response)
+        });
+    } catch{
+        response({ status: false, error: "Err: 002. No se ha seleccionado ninguna impresora usb." });
+    }
 }
 
 function tryResetDevices(handle, response, next) {
@@ -65,7 +69,7 @@ function printDataToInterface(data, device, handle, response) {
             chrome.usb.closeDevice(handle);
         });
         if (transferResult.resultCode) {
-            response({ status: false, error: "Err: 004. Error en la transferencia. " + chrome.runtime.lastError });
+            response({ status: false, error: "Err: 003. Error en la transferencia. " + chrome.runtime.lastError });
         }
     });
 }
