@@ -31,7 +31,7 @@ wsServer.addEventListener('request', function (req) {
     }
     var msj = JSON.parse(e.data);
     var token = msj.token;
-    if (token === PRIVATE_TOKEN || true) {
+    if (token == PRIVATE_TOKEN) {
       var func = msj.func;
       var data = msj.data;
       var funcs = {
@@ -43,7 +43,10 @@ wsServer.addEventListener('request', function (req) {
         getPrinters: getPrinters,
         scanUSBPrinters: scanUSBPrinters
       };
-      funcs[func](data, response);
+      if (func in funcs)
+        funcs[func](data, response);
+      else
+        response({ status: false, error: "Function doesn't found. Please check the documentation. Func: " + func });
     } else {
       response({ status: false, error: "Invalid token. Access is not granted." });
     }
