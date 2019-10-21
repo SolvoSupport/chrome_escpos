@@ -4,6 +4,7 @@ var printersView;
 var defPrinter;
 
 function handleError(s, dir) {
+  dir = dir || "#alert-global";
   if (s)
     $(dir).removeAttr('hidden');
   else
@@ -235,7 +236,7 @@ window.addEventListener('DOMContentLoaded', function () {
       }
     }
     e.preventDefault();
-    handlePrint({ id: Number(selected), message: {text:"Ticket de prueba\n\nTOTAL:\t\t\t\t$1000\n\n", qr:"ticket-de-prueba"}, messageType: "ticket" }, response);
+    handlePrint({ id: Number(selected), message: { text: "Ticket de prueba\n\nTOTAL:\t\t\t\t$1000\n\n", qr: "ticket-de-prueba" }, messageType: "ticket" }, response);
   })
   $('#editPrinter').click(editPrinter);
   $('#savePrint').click(savePrinter);
