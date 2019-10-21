@@ -7,7 +7,7 @@ var port = 9999;
 var server = new http.Server();
 var wsServer = new http.WebSocketServer(server);
 var isServer = true;
-const PRIVATE_TOKEN = "npfdFMGpysvG7SNEGy60hTAoS0/EhHsIdvc94CQgUnU";
+var PRIVATE_TOKEN = "npfdFMGpysvG7SNEGy60hTAoS0/EhHsIdvc94CQgUnU";
 
 server.listen(port);
 /////////////////////////////////////////////////////////////////
@@ -30,8 +30,8 @@ wsServer.addEventListener('request', function (req) {
       socket.send(JSON.stringify(data));
     }
     var msj = JSON.parse(e.data);
-    var token = msj.token;
-    if (token == PRIVATE_TOKEN) {
+    var token = msj.token.trim();
+    if (token === PRIVATE_TOKEN) {
       var func = msj.func;
       var data = msj.data;
       handleError(JSON.stringify(data));

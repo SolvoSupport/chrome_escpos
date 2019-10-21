@@ -1,3 +1,6 @@
+var cutLine = String.fromCharCode(0x0a) + String.fromCharCode(0x1d) + String.fromCharCode(0x56) + String.fromCharCode(0x41) + String.fromCharCode(0x03);
+var setEncoding = String.fromCharCode(0x1b) + String.fromCharCode(0x28) + String.fromCharCode(0x74) + String.fromCharCode(0x03) + String.fromCharCode(0x00) + String.fromCharCode(0x00) + String.fromCharCode(0x7f) + String.fromCharCode(0x01);
+
 function encodeText(str, callback) {
     var bb = new Blob([str]);
     var f = new FileReader();
@@ -7,7 +10,7 @@ function encodeText(str, callback) {
     f.readAsArrayBuffer(bb);
 }
 
-function encodeUSBText(s, callback){
+function encodeUSBText(s, callback) {
     var dataArray = s.split('');
     dataArray = dataArray.map(function (s) { return s.charCodeAt(0) });
     //dataArray.push(0x0a); dataArray.push(0x1d); dataArray.push(0x56); dataArray.push(0x41); dataArray.push(0x03);
@@ -40,7 +43,7 @@ function encodeQr(data, callback) {
 
 function printTicketUsb(data, callback) {
     encodeQr(data.qr, function (qr) {
-        var ticket = data.text + qr + String.fromCharCode(0x0a) + String.fromCharCode(0x1d) + String.fromCharCode(0x56) + String.fromCharCode(0x41) + String.fromCharCode(0x03);
+        var ticket = setEncoding + data.text + qr + cutLine;
         encodeUSBText(ticket, function (output) {
             callback(output);
         });
@@ -49,7 +52,7 @@ function printTicketUsb(data, callback) {
 
 function printTicket(data, callback) {
     encodeQr(data.qr, function (qr) {
-        var ticket = data.text + String.fromCharCode(0x0a) + qr + String.fromCharCode(0x0a) + String.fromCharCode(0x1d) + String.fromCharCode(0x56) + String.fromCharCode(0x41) + String.fromCharCode(0x03);
+        var ticket = setEncoding + data.text + qr + cutLine;
         encodeText(ticket, function (output) {
             callback(output);
         });
@@ -71,21 +74,21 @@ function print(message, messageType, printer, callback) {
         sendToPrint(message);
     } else if (messageType === "text") {
         if (mode === "usb")
-            encodeUSBText(message, sendToPrint);
+            encodeUSBText(setEncoding + message, sendToPrint);
         if (mode === "tcp")
-            encodeText(message, sendToPrint);
+            encodeText(setEncoding + message, sendToPrint);
     } else if (messageType === "qr") {
-        if(mode === "usb"){
-            encodeQr(message, function(s){
+        if (mode === "usb") {
+            encodeQr(message, function (s) {
                 encodeUSBText(s, sendToPrint);
             });
         }
-        if(mode === "tcp"){
+        if (mode === "tcp") {
             encodeQr(message, function (s) {
                 encodeText(s, sendToPrint);
             });
         }
-        
+
     } else if (messageType === "ticket") {
         if (mode === "usb")
             printTicketUsb(message, sendToPrint);
