@@ -34,7 +34,7 @@ wsServer.addEventListener('request', function (req) {
     if (token == PRIVATE_TOKEN) {
       var func = msj.func;
       var data = msj.data;
-      handleError(JSON.parse(data));
+      handleError(JSON.stringify(data));
       var funcs = {
         print: handlePrint,
         add: addPrinter,
